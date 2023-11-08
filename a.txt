@@ -1,0 +1,27 @@
+1. đăng nhập , đănhg kí, đăng xuất
+
++ đổi mật khẩu
++ quên mật khẩu
+
+2. HOME 
+- Banner
+- Hiển thị các bài hát(/song/.... )
+- MỚi phát hành hát( lọc theo ngày phát hành rồi limit)
+3 Bảng xếp hạng
+- top 10 bài hát lọc theo VPOP, KPOP, US-UK (tính theo lượt nghe 1 lượt click là 1 lượt nghe)
+
+Chiến
+
+4 Chủ đề - Thẻ loại
+- Lọc theo thể loại : POP, RAP, bolero
+- Lọc theo quốc gia : VPOP, KPOP , US-UK
+
+5.Thêm vào danh sách yêu thích
++ Click vào là thêm vào danh sách yêu thích
+
+6. trang ca sĩ :
+Bấm vào cac sĩ nào thì sẽ danh sách nhạc nhạc của ng ng đó
+
+7. Thanh tìm kiếm bài hát , ca sĩ 
+
+AN
