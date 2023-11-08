@@ -8,7 +8,7 @@ from flask_admin.contrib.sqla import ModelView
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'abcxzhjghehger'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:B20DCVT009@localhost/music2'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:B20DCVT009@localhost/My_music'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
@@ -19,10 +19,10 @@ admin = Admin(app, name='Quản trị người dùng', template_mode='bootstrap3
 class User(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(255), nullable=False)
-    password = db.Column(db.String(255), nullable=False)
-    email = db.Column(db.String(255), nullable=False)
-    role = db.Column(db.String(255), nullable=False)
+    username = db.Column(db.String(25), nullable=False)
+    password = db.Column(db.String(25), nullable=False)
+    email = db.Column(db.String(25), nullable=False)
+    role = db.Column(db.String(10), nullable=False)
     def __str__(self):
         return self.username
 
@@ -30,8 +30,8 @@ class User(db.Model):
 class Artist(db.Model):
     __tablename__ = 'Artist'
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(255), nullable=False)
-    image = db.Column(db.String(255), nullable=False)
+    name = db.Column(db.String(50), nullable=False)
+    image = db.Column(db.String(100), nullable=False)
     def __str__(self):
         return self.name
 
@@ -39,9 +39,9 @@ class Artist(db.Model):
 class Song(db.Model):
     __tablename__ = 'Song'
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(255), nullable=False)
-    image = db.Column(db.String(255), nullable=False)
-    link = db.Column(db.String(255), nullable=False)
+    title = db.Column(db.String(25), nullable=False)
+    image = db.Column(db.String(100), nullable=False)
+    link = db.Column(db.String(100), nullable=False)
     genre_id = db.Column(db.Integer, db.ForeignKey('genre.id'))
     genre = db.relationship('Genre')
     region_id = db.Column(db.Integer, db.ForeignKey('region.id'))
@@ -52,7 +52,7 @@ class Song(db.Model):
 class Genre(db.Model):
     __tablename__ = 'genre'
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(255), nullable=False)
+    name = db.Column(db.String(25), nullable=False)
     def __str__(self):
         return self.name
 
@@ -60,7 +60,7 @@ class Genre(db.Model):
 class Region(db.Model):
     __tablename__ = 'region'
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(255), nullable=False)
+    name = db.Column(db.String(25), nullable=False)
     def __str__(self):
         return self.name
 
@@ -113,8 +113,6 @@ admin.add_view(PerformanceModelView(Performence, db.session))
 
 
 
-
-
 @app.route('/song', methods=['GET'])
 def get_songs():
     # Truy vấn dữ liệu từ cơ sở dữ liệu sử dụng SQLAlchemy
@@ -149,34 +147,34 @@ def get_song(song_id):
     }
     return jsonify(song_info)
 
-# xem các thể laoij nhạc
-# @app.route('/genre/<int:genre_id>', methods=['GET'])
-# def get_genre(genre_id):
-#     genre = Genre.query.get(genre_id)
-#     if genre is None:
-#         return jsonify({'error' : 'Thể loại ko tồn tại'}),404
-#     genre_info = {
-#         'name' : genre.name,
-#     }
-#     return jsonify(genre_info)
+# trả về các thể loại
+@app.route('/genre/<int:genre_id>', methods=['GET'])
+def get_genre(genre_id):
+    genre = Genre.query.get(genre_id)
+    if genre is None:
+        return jsonify({'error' : 'Thể loại ko tồn tại'}),404
+    genre_info = {
+        'name' : genre.name,
+    }
+    return jsonify(genre_info)
 
+# trả về bài hát theo thể loại 
+@app.route('/songs-by-genre', methods=['GET'])
+def songs_by_genre():
+    genre_name = request.args.get('genre')  
+    songs = Song.query.join(Genre).filter(Genre.name == genre_name).all()
+    songs_list = []
+    for song in songs:
+        song_info = {
+            'title': song.title,
+            'artist': song.artist.name,
+            'genre': song.genre.name,
+            'region': song.region.name,
+            'link': song.link
+        }
+        songs_list.append(song_info)
 
-# @app.route('/songs-by-genre', methods=['GET'])
-# def songs_by_genre():
-#     genre_name = request.args.get('genre')  
-#     songs = Song.query.join(Genre).filter(Genre.name == genre_name).all()
-#     songs_list = []
-#     for song in songs:
-#         song_info = {
-#             'title': song.title,
-#             'artist': song.artist.name,
-#             'genre': song.genre.name,
-#             'region': song.region.name,
-#             'link': song.link
-#         }
-#         songs_list.append(song_info)
-
-#     return jsonify({'songs': songs_list})
+    return jsonify({'songs': songs_list})
 
 
 
