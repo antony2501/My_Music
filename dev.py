@@ -43,9 +43,10 @@ class Song(db.Model):
     image = db.Column(db.String(100), nullable=False)
     link = db.Column(db.String(100), nullable=False)
     genre_id = db.Column(db.Integer, db.ForeignKey('genre.id'))
-    genre = db.relationship('Genre')
+    genre = db.relationship('Genre',backref='genres')
     region_id = db.Column(db.Integer, db.ForeignKey('region.id'))
-    region = db.relationship('Region')
+    region = db.relationship('Region',backref = 'regions')
+    listen = db.Column(db.Integer, default = 0)
     def __str__(self):
         return self.title
     
@@ -100,9 +101,7 @@ class PerformanceModelView(ModelView):
     column_label = "Performence"
 
 
-
-
-
+admin.add_view(ModelView(User,db.session))
 admin.add_view(SongView(Song, db.session))
 admin.add_view(ArtistView(Artist, db.session))
 admin.add_view(ModelView(Genre,db.session))
@@ -112,69 +111,64 @@ admin.add_view(PerformanceModelView(Performence, db.session))
 
 
 
-
-@app.route('/song', methods=['GET'])
+#lấy thông tin các bài hát
+@app.route('/songs', methods=['GET'])
 def get_songs():
-    # Truy vấn dữ liệu từ cơ sở dữ liệu sử dụng SQLAlchemy
-    songs = Song.query.all()
-    # Tạo một danh sách chứa thông tin của từng bài hát
-    songs_list = []
-    for song in songs:
-        song_info = {
-            'title': song.title,
-            'artist': song.artist.name,  # Truy vấn tên nghệ sĩ từ quan hệ
-            'genre': song.genre.name,    # Truy vấn tên thể loại từ quan hệ
-            'region': song.region.name,  # Truy vấn tên vùng miền từ quan hệ
-            'link': song.link
-        }
-        songs_list.append(song_info)
-    # Convert danh sách bài hát thành một JSON response
-    return jsonify({'songs': songs_list})
+    # Kết nối các bảng Song, Genre, và Performence thông qua câu lệnh SQL
+    sql_query = """
+    SELECT Song.id, Song.title, Song.image, Song.link,Song.listen, Genre.name AS genre,Region.name AS region, Artist.name AS artist
+    FROM Song
+    JOIN Performence ON Song.id = Performence.song_id
+    JOIN Artist ON Performence.artist_id = Artist.id
+    """
+    result = db.session.execute(sql_query)
+    # Khởi tạo một dict để theo dõi bài hát và ca sĩ
+    songs_dict = {}
+
+    for row in result:
+        song_id = row.id
+        if song_id not in songs_dict:
+        # Nếu bài hát chưa có trong dict, thêm nó vào với thông tin cơ bản
+            songs_dict[song_id] = {
+                'id': row.id,
+                'title': row.title,
+                'image': row.image,
+                'link': row.link,
+                'listen':row.listen,
+                'artists': []  # Khởi tạo danh sách ca sĩ cho bài hát
+            }
+        # Thêm thông tin về ca sĩ cho bài hát
+        artist_data = {'name': row.artist}
+        songs_dict[song_id]['artists'].append(artist_data)
+
+# Chuyển đổi dict thành danh sách để trả về dưới dạng JSON
+    song_list = list(songs_dict.values())
+    return jsonify({'songs': song_list})
 
 
- # Truy vấn dữ liệu của bài hát theo ID
-@app.route('/song/<int:song_id>', methods=['GET'])
-def get_song(song_id):
+
+# Truy vấn dữ liệu của bài hát theo ID
+@app.route('/songs/<int:song_id>', methods=['GET'])
+def get_song_by_id(song_id):
+    # Lấy thông tin bài hát từ cơ sở dữ liệu
     song = Song.query.get(song_id)
     if song is None:
-        return jsonify({'error': 'Bài hát không tồn tại'}), 404
+        return jsonify({'error': 'Song not found'}), 404
+    song.listen += 1
+    db.session.commit() # cập nhật lượt nghe
     song_info = {
+        'id': song.id,
         'title': song.title,
-        'artist': song.artist.name,
-        'genre': song.genre.name,
-        'region': song.region.name,
-        'link': song.link
+        'image': song.image,
+        'link': song.link,
+        'genre': song.genre.name,  
+        'region': song.region.name,  
+        'listen': song.listen
     }
-    return jsonify(song_info)
 
-# trả về các thể loại
-@app.route('/genre/<int:genre_id>', methods=['GET'])
-def get_genre(genre_id):
-    genre = Genre.query.get(genre_id)
-    if genre is None:
-        return jsonify({'error' : 'Thể loại ko tồn tại'}),404
-    genre_info = {
-        'name' : genre.name,
-    }
-    return jsonify(genre_info)
+    return jsonify({'song': song_info})
 
-# trả về bài hát theo thể loại 
-@app.route('/songs-by-genre', methods=['GET'])
-def songs_by_genre():
-    genre_name = request.args.get('genre')  
-    songs = Song.query.join(Genre).filter(Genre.name == genre_name).all()
-    songs_list = []
-    for song in songs:
-        song_info = {
-            'title': song.title,
-            'artist': song.artist.name,
-            'genre': song.genre.name,
-            'region': song.region.name,
-            'link': song.link
-        }
-        songs_list.append(song_info)
 
-    return jsonify({'songs': songs_list})
 
 
 
