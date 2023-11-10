@@ -118,6 +118,8 @@ def get_songs():
     sql_query = """
     SELECT Song.id, Song.title, Song.image, Song.link,Song.listen, Genre.name AS genre,Region.name AS region, Artist.name AS artist
     FROM Song
+    JOIN Genre ON Song.genre_id = Genre.id
+    JOIN Region ON Region.id = Song.region_id
     JOIN Performence ON Song.id = Performence.song_id
     JOIN Artist ON Performence.artist_id = Artist.id
     """
@@ -147,26 +149,48 @@ def get_songs():
 
 
 
-# Truy vấn dữ liệu của bài hát theo ID
+from flask import jsonify
+
+# Route để lấy thông tin chi tiết của một bài hát theo ID
 @app.route('/songs/<int:song_id>', methods=['GET'])
 def get_song_by_id(song_id):
-    # Lấy thông tin bài hát từ cơ sở dữ liệu
-    song = Song.query.get(song_id)
+    sql_query = """
+    SELECT Song.id, Song.title, Song.image, Song.link, Song.listen, Genre.name AS genre, Region.name AS region, Artist.name AS artist
+    FROM Song
+    JOIN Performence ON Song.id = Performence.song_id
+    JOIN Artist ON Performence.artist_id = Artist.id
+    JOIN Genre ON Song.genre_id = Genre.id
+    JOIN Region ON Region.id = Song.region_id
+    WHERE Song.id = :song_id
+    """
+    result = db.session.execute(sql_query, {'song_id': song_id})
+    song = result.fetchone()
     if song is None:
         return jsonify({'error': 'Song not found'}), 404
-    song.listen += 1
-    db.session.commit() # cập nhật lượt nghe
+    db.session.execute(f"UPDATE Song SET listen = {song.listen + 1} WHERE id = {song_id}")
+    db.session.commit()
+
+    artist_query = """
+    SELECT Artist.name AS artist
+    FROM Performence
+    JOIN Artist ON Performence.artist_id = Artist.id
+    WHERE Performence.song_id = :song_id
+    """
+    artist_result = db.session.execute(artist_query, {'song_id': song_id})
+    artists = [row.artist for row in artist_result]
     song_info = {
         'id': song.id,
         'title': song.title,
         'image': song.image,
         'link': song.link,
-        'genre': song.genre.name,  
-        'region': song.region.name,  
-        'listen': song.listen
+        'genre': song.genre,
+        'region': song.region,
+        'listen_count': song.listen + 1,
+        'artists': artists
     }
 
     return jsonify({'song': song_info})
+
 
 
 
