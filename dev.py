@@ -87,6 +87,7 @@ class SongView(ModelView):
     edit_modal = True
     details_modal = True
     create_modal = True
+    column_list = ['title', 'genre', 'region', 'listen', 'release_date']
     # column_list = ['title', 'artists']
 
 class ArtistView(ModelView):
