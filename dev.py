@@ -1,5 +1,7 @@
 from flask import Flask, render_template, redirect, url_for, flash, request, abort,jsonify
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import Column, Integer, String, ForeignKey, Date
+from sqlalchemy.orm import relationship
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 import matplotlib.pyplot as plt
 from flask_admin import Admin, AdminIndexView, expose, BaseView
@@ -46,6 +48,7 @@ class Song(db.Model):
     genre = db.relationship('Genre',backref='genres')
     region_id = db.Column(db.Integer, db.ForeignKey('region.id'))
     region = db.relationship('Region',backref = 'regions')
+    release_date = db.Column(Date,nullable=False)
     listen = db.Column(db.Integer, default = 0)
     def __str__(self):
         return self.title
@@ -116,7 +119,7 @@ admin.add_view(PerformanceModelView(Performence, db.session))
 def get_songs():
     # Kết nối các bảng Song, Genre, và Performence thông qua câu lệnh SQL
     sql_query = """
-    SELECT Song.id, Song.title, Song.image, Song.link,Song.listen, Genre.name AS genre,Region.name AS region, Artist.name AS artist
+    SELECT Song.id, Song.title, Song.image, Song.link,Song.listen,Song.release_date, Genre.name AS genre,Region.name AS region, Artist.name AS artist
     FROM Song
     JOIN Genre ON Song.genre_id = Genre.id
     JOIN Region ON Region.id = Song.region_id
@@ -137,10 +140,13 @@ def get_songs():
                 'image': row.image,
                 'link': row.link,
                 'listen':row.listen,
+                'release' :row.release_date,
                 'artists': []  # Khởi tạo danh sách ca sĩ cho bài hát
             }
         # Thêm thông tin về ca sĩ cho bài hát
-        artist_data = {'name': row.artist}
+        artist_data = {
+            'name': row.artist,
+            }
         songs_dict[song_id]['artists'].append(artist_data)
 
 # Chuyển đổi dict thành danh sách để trả về dưới dạng JSON
@@ -155,7 +161,7 @@ from flask import jsonify
 @app.route('/songs/<int:song_id>', methods=['GET'])
 def get_song_by_id(song_id):
     sql_query = """
-    SELECT Song.id, Song.title, Song.image, Song.link, Song.listen, Genre.name AS genre, Region.name AS region, Artist.name AS artist
+    SELECT Song.id, Song.title, Song.image, Song.link, Song.listen,Song.release_date, Genre.name AS genre, Region.name AS region, Artist.name AS artist
     FROM Song
     JOIN Performence ON Song.id = Performence.song_id
     JOIN Artist ON Performence.artist_id = Artist.id
@@ -177,7 +183,7 @@ def get_song_by_id(song_id):
     WHERE Performence.song_id = :song_id
     """
     artist_result = db.session.execute(artist_query, {'song_id': song_id})
-    artists = [row.artist for row in artist_result]
+    artists = [{'name': row.artist} for row in artist_result]
     song_info = {
         'id': song.id,
         'title': song.title,
@@ -185,6 +191,7 @@ def get_song_by_id(song_id):
         'link': song.link,
         'genre': song.genre,
         'region': song.region,
+        'release' :song.release_date,
         'listen_count': song.listen + 1,
         'artists': artists
     }
