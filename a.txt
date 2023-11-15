@@ -22,6 +22,6 @@ Chiến
 6. trang ca sĩ :
 Bấm vào cac sĩ nào thì sẽ danh sách nhạc nhạc của ng ng đó
 
-7. Thanh tìm kiếm bài hát , ca sĩ 
+7. Thanh tìm kiếm bài hát
 
 AN

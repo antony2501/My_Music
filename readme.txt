@@ -1,0 +1,1 @@
+cài python và pip install những thư viện cần
