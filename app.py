@@ -548,6 +548,46 @@ def song(song_id):
     song_dict.update({'artist':result_dict_artist})
     return jsonify(song_dict)
 
+
+@app.route('/favoritesongs')
+@login_required
+def favorite_songs():
+    user_id = current_user.get_id()
+
+    favorites = Favorites.query.filter_by(user_id=user_id).all()
+
+    favorite_songs_list = []
+
+    for favorite in favorites:
+        song = favorite.song
+
+        song_dict = {
+            'id': song.id,
+            'title': song.title,
+            'image': song.image,
+            'link': song.link,
+            'release_date': song.release_date,
+            'listen': song.listen,
+            'region': song.region.name,
+        }
+
+        query = db.session.query(Artist).join(Performence).join(Song).filter(Song.id == song.id)
+        artists = query.all()
+        result_dict_artist = []
+
+        for artist in artists:
+            ar_dict = {
+                'id': artist.id,
+                'name': artist.name,
+                'image': artist.image,
+            }
+            result_dict_artist.append(ar_dict)
+
+        song_dict.update({'artists': result_dict_artist})
+        favorite_songs_list.append(song_dict)
+
+    return jsonify(favorite_songs_list)
+
 @app.route("/addtoplaylist",methods = ['POST'])
 @login_required
 def add_to_playlist():
@@ -562,6 +602,21 @@ def add_to_playlist():
         db.session.add(usersong)
         db.session.commit()
         return jsonify({'message':"Added to playlist successfully."}) 
+
+@app.route("/removefromplaylist", methods=['POST'])
+@login_required
+def remove_from_playlist():
+    data = request.get_json()
+    song_id = data.get('song_id')
+    user_id = current_user.get_id()
+    existing_entry = Favorites.query.filter_by(user_id=user_id, song_id=song_id).first()
+    
+    if existing_entry:
+        db.session.delete(existing_entry)
+        db.session.commit()
+        return jsonify({'message': "Removed from playlist successfully."})
+    else:
+        return jsonify({'message': "Song is not in your playlist."})
 
 @app.route('/moiphathanh')
 def moiphathanh():
@@ -887,8 +942,6 @@ def search(songname):
 
     
     return jsonify({'song':result_dict_song})
-
-
 
 
 if __name__ == '__main__':
