@@ -157,6 +157,7 @@ class SongView(Admin_Controll):
     edit_modal = True
     create_modal = True
     details_modal = True
+    column_list = ['id','title', 'genre', 'region', 'listen', 'release_date','link']
     pass
 class GenreView(Admin_Controll):
     edit_modal = True
@@ -190,6 +191,7 @@ class ArtistView(ModelView):
     edit_modal = True
     create_modal = True
     details_modal = True
+    column_list = ['id','name']
 
 admin.add_view(UserView(User,db.session))
 admin.add_view(SongView(Song,db.session))

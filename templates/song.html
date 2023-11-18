@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Songs</title>
+
+    <style>
+        /* CSS styling for the image */
+        img {
+            width: 170px; /* Set the fixed width for the image */
+            height: 150px; /* Set the fixed height for the image */
+            object-fit: cover; /* Maintain aspect ratio and cover the entire container */
+            display: block; /* Remove extra space beneath the image */
+            margin: 0 auto; /* Center the image within its container */
+        }
+
+        /* Additional styling for the list items */
+        li {
+            display: inline-block;
+            margin: 10px; /* Adjust the margin between list items */
+            text-align: center; /* Center the content within the list item */
+        }
+    </style>
+</head>
+<body>
+    <h1>Song List</h1>
+    <ul>
+        {% for song in songs %}
+            <li>
+                <h2>{{ song.title }}</h2>
+                <img src="{{ song.image }}" alt="{{ song.title }} Image">
+                <br>
+                <audio controls style="max-width: 250px;">
+                    <source src="{{ url_for('static', filename=song.link) }}" type="audio/mp3">
+                    Your browser does not support the audio element.
+                </audio>
+                <p>Release Date: {{ song.release_date }}</p>
+                <p>Listen Count: {{ song.listen }}</p>
+                <p>Genre: {{ song.genre.name }}</p>
+                <p>Region: {{ song.region.name }}</p>
+            </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
