@@ -1,4 +1,4 @@
-from flask import Flask,g,url_for,request,jsonify
+from flask import Flask,g,url_for,request,jsonify,abort
 from flask_login import UserMixin,LoginManager,login_user,logout_user,login_required,current_user
 from flask_bcrypt import Bcrypt
 from flask_sqlalchemy import SQLAlchemy
@@ -239,6 +239,9 @@ def login():
         return jsonify({'message': f'Success! You just logged in as {attempted_user.username}', 'isAdmin': False, 'redirect': '/getallsong'})
     else:
         return jsonify({'message': 'Username and password are not match! Please try again', 'isAdmin': False}), 401
+    
+
+
 @app.route('/logout',methods = ['POST'])
 @login_required
 def logout():
