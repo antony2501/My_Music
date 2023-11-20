@@ -1,4 +1,4 @@
-from flask import Flask,g,url_for,request,jsonify,abort
+from flask import Flask,g,url_for,request,jsonify
 from flask_login import UserMixin,LoginManager,login_user,logout_user,login_required,current_user
 from flask_bcrypt import Bcrypt
 from flask_sqlalchemy import SQLAlchemy
@@ -9,7 +9,7 @@ from flask_mail import Mail,Message
 
 from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
-
+from urllib.parse import unquote_plus
 
 app = Flask(__name__)
 
@@ -239,9 +239,6 @@ def login():
         return jsonify({'message': f'Success! You just logged in as {attempted_user.username}', 'isAdmin': False, 'redirect': '/getallsong'})
     else:
         return jsonify({'message': 'Username and password are not match! Please try again', 'isAdmin': False}), 401
-    
-
-
 @app.route('/logout',methods = ['POST'])
 @login_required
 def logout():
@@ -887,7 +884,8 @@ def artist(artist_id):
     return jsonify(result_return)
 @app.route('/api/search')
 def search():
-    songname = request.args.get('q')
+    songname_encoded = request.args.get('q')
+    songname = unquote_plus(songname_encoded) 
     dbm = get_db()
     cur = dbm.execute(
         '''
