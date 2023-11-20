@@ -882,10 +882,9 @@ def artist(artist_id):
 
     result_return = {'err':0,'msg':'Success','data': {'song':result_dict_song}}
     return jsonify(result_return)
-@app.route('/api/search',methods = ['POST'])
+@app.route('/api/search')
 def search():
-    data = request.get_json()
-    songname = data.get('q')
+    songname = request.args.get('q')
     dbm = get_db()
     cur = dbm.execute(
         '''
