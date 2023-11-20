@@ -33,7 +33,7 @@
                 <img src="{{ song.image }}" alt="{{ song.title }} Image">
                 <br>
                 <audio controls style="max-width: 250px;">
-                    <source src="/static/US-UK/1.mp3" type="audio/mp3">
+                    <source src="{{ song.link }}" type="audio/mp3">
                     Your browser does not support the audio element.
                 </audio>
                 <p>Release Date: {{ song.release_date }}</p>
