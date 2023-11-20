@@ -4,7 +4,7 @@ from flask_bcrypt import Bcrypt
 from flask_sqlalchemy import SQLAlchemy
 from itsdangerous.url_safe import URLSafeTimedSerializer as Serializer
 import sqlite3
-
+from collections import OrderedDict
 from flask_mail import Mail,Message
 
 from flask_admin import Admin
@@ -37,7 +37,7 @@ mail = Mail(app)
 
  # ket noi Database
 def connect_db():
-    sql = sqlite3.connect('music.db')
+    sql = sqlite3.connect('instance\music.db')
     sql.row_factory = sqlite3.Row #tra ve dictionary thay vi tuple
     return sql 
 
@@ -327,7 +327,7 @@ def reset_token(token):
     return render_template('resetpasswordr2.html',token = token)
 '''
 
-@app.route('/topbaihat/<quocgia>')
+@app.route('/api/topbaihat/<quocgia>')
 def topbaihat(quocgia):
     dbm = get_db()
     cur = dbm.execute(
@@ -391,10 +391,10 @@ def topbaihat(quocgia):
         song_dict.update({'artist':result_dict_artist})
         result_dict_song.append(song_dict)
 
-    
-    return jsonify({'song':result_dict_song})
+    result_return = {'err':0,'msg':'Success','data': {'song':result_dict_song}}
+    return jsonify(result_return)
 
-@app.route('/topbaihatall')
+@app.route('/api/topbaihatall')
 def topbaihatall():
     dbm = get_db()
     cur = dbm.execute(
@@ -457,10 +457,10 @@ def topbaihatall():
         song_dict.update({'artist':result_dict_artist})
         result_dict_song.append(song_dict)
 
-    
-    return jsonify({'song':result_dict_song})
+    result_return = {'err':0,'msg':'Success','data': {'song':result_dict_song}}
+    return jsonify(result_return)
 
-@app.route('/songs')
+@app.route('/api/songs')
 def songs():
     dbm = get_db()
     cur = dbm.execute(
@@ -520,10 +520,10 @@ def songs():
         song_dict.update({'artist':result_dict_artist})
         result_dict_song.append(song_dict)
 
-    
-    return jsonify({'song':result_dict_song})
+    result_return = {'err':0,'msg':'Success','data': {'song':result_dict_song}}
+    return jsonify(result_return)
 
-@app.route('/song/<int:song_id>')
+@app.route('/api/song/<int:song_id>')
 def song(song_id):
     song = db.session.query(Song).get(song_id)
     song.listen = song.listen + 1
@@ -548,10 +548,11 @@ def song(song_id):
         }
         result_dict_artist.append(ar_dict)
     song_dict.update({'artist':result_dict_artist})
-    return jsonify(song_dict)
+    result_return = {'err':0,'msg':'Success','data': {'song':song_dict}}
+    return jsonify(result_return)
 
 
-@app.route('/favoritesongs')
+@app.route('/api/favoritesongs')
 @login_required
 def favorite_songs():
     user_id = current_user.get_id()
@@ -588,9 +589,10 @@ def favorite_songs():
         song_dict.update({'artists': result_dict_artist})
         favorite_songs_list.append(song_dict)
 
-    return jsonify(favorite_songs_list)
+    result_return = {'err':0,'msg':'Success','data': {'song':favorite_songs_list}}
+    return jsonify(result_return)
 
-@app.route("/addtoplaylist",methods = ['POST'])
+@app.route("/api/addtoplaylist",methods = ['POST'])
 @login_required
 def add_to_playlist():
     data = request.get_json()
@@ -605,7 +607,7 @@ def add_to_playlist():
         db.session.commit()
         return jsonify({'message':"Added to playlist successfully."}) 
 
-@app.route("/removefromplaylist", methods=['POST'])
+@app.route("/api/removefromplaylist", methods=['POST'])
 @login_required
 def remove_from_playlist():
     data = request.get_json()
@@ -620,7 +622,7 @@ def remove_from_playlist():
     else:
         return jsonify({'message': "Song is not in your playlist."})
 
-@app.route('/moiphathanh')
+@app.route('/api/moiphathanh')
 def moiphathanh():
     dbm = get_db()
     cur = dbm.execute(
@@ -682,10 +684,10 @@ def moiphathanh():
         song_dict.update({'artist':result_dict_artist})
         result_dict_song.append(song_dict)
 
-    
-    return jsonify({'song':result_dict_song})
+    result_return = {'err':0,'msg':'Success','data': {'song':result_dict_song}}
+    return jsonify(result_return)
 
-@app.route('/genre/<theloai>')
+@app.route('/api/genre/<theloai>')
 def genre(theloai):
     dbm = get_db()
     cur = dbm.execute(
@@ -746,10 +748,10 @@ def genre(theloai):
         song_dict.update({'artist':result_dict_artist})
         result_dict_song.append(song_dict)
 
-    
-    return jsonify({'song':result_dict_song})
+    result_return = {'err':0,'msg':'Success','data': {'song':result_dict_song}}
+    return jsonify(result_return)
 
-@app.route('/region/<quocgia>')
+@app.route('/api/region/<quocgia>')
 def region(quocgia):
     dbm = get_db()
     cur = dbm.execute(
@@ -810,10 +812,10 @@ def region(quocgia):
         song_dict.update({'artist':result_dict_artist})
         result_dict_song.append(song_dict)
 
-    
-    return jsonify({'song':result_dict_song})
+    result_return = {'err':0,'msg':'Success','data': {'song':result_dict_song}}
+    return jsonify(result_return)
 
-@app.route('/artist/<int:artist_id>')
+@app.route('/api/artist/<int:artist_id>')
 def artist(artist_id):
     dbm = get_db()
     cur = dbm.execute(
@@ -878,10 +880,9 @@ def artist(artist_id):
         song_dict.update({'artist':result_dict_artist})
         result_dict_song.append(song_dict)
 
-    
-    return jsonify({'song':result_dict_song})
-
-@app.route('/search/<songname>')
+    result_return = {'err':0,'msg':'Success','data': {'song':result_dict_song}}
+    return jsonify(result_return)
+@app.route('/api/search/<songname>')
 def search(songname):
     dbm = get_db()
     cur = dbm.execute(
@@ -903,8 +904,9 @@ def search(songname):
         where s.title like ?
         ''',['%' + songname + '%'])
     result_song = cur.fetchall()
+    if not result_song:
+        return jsonify({'err':1,'msg':'Not Found'})
     result_dict_song = []
-
     for song in result_song:
         song_dict = {
             'id' : song['id'],
@@ -942,9 +944,8 @@ def search(songname):
         song_dict.update({'artist':result_dict_artist})
         result_dict_song.append(song_dict)
 
-    
-    return jsonify({'song':result_dict_song})
-
+    result_return = {'err':0,'msg':'Success','data': {'song':result_dict_song}}
+    return jsonify(result_return)
 
 if __name__ == '__main__':
     app.run(debug=True)

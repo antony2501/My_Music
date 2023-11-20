@@ -1,1 +1,1 @@
-cài python và pip install những thư viện cần
+file music.db để trong thư mục instance

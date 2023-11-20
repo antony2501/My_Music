@@ -1,0 +1,6 @@
+flask
+flask-login
+flask-admin
+flask-sqlalchemy
+flask-mail
+flask-bcrypt
