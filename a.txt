@@ -24,4 +24,6 @@ Bấm vào cac sĩ nào thì sẽ danh sách nhạc nhạc của ng ng đó
 
 7. Thanh tìm kiếm bài hát
 
+8 . thiết kế databases
+
 AN
