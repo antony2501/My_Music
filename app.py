@@ -1,4 +1,4 @@
-from flask import Flask,g,url_for,request,jsonify
+from flask import Flask,g,url_for,request,jsonify,flash,redirect,render_template
 from flask_login import UserMixin,LoginManager,login_user,logout_user,login_required,current_user
 from flask_bcrypt import Bcrypt
 from flask_sqlalchemy import SQLAlchemy
@@ -289,7 +289,7 @@ def reset_request():
         return jsonify({'message':'Email is not exist', 'redirect': '/reset_password'})
 
 
-
+'''
 @app.route('/reset_password/<token>',methods = ['GET','POST'])
 def reset_token(token):
     user = User.verify_token(token)
@@ -306,6 +306,7 @@ def reset_token(token):
         db.session.commit()
         return jsonify({'message':'Password is changed'})
 '''
+
 #xu li reset_password
 @app.route('/reset_password/<token>',methods = ['GET','POST'])
 def reset_token(token):
@@ -325,7 +326,7 @@ def reset_token(token):
             flash('Password changed!')
             return redirect(url_for('login'))       
     return render_template('resetpasswordr2.html',token = token)
-'''
+
 
 @app.route('/api/topbaihat/<quocgia>')
 def topbaihat(quocgia):
